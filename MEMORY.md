@@ -1,3 +1,4 @@
+- [記憶庫 git 同步](memory-repo-sync.md) — 記憶資料夾＝git repo，remote 在 private GitHub；改完記憶檔要 commit
 - [CCLSTM 動靜態判斷專案](cclstm-dynamic-static-project.md) — 專案緣起；⚠ 感測器已改 2D 光達，現行規格見 v2
 - [Stereo 動靜態 pipeline](stereo-dynamic-static-pipeline.md) — ⚠ 已被 bev-system-spec-v1 取代，僅存歷史脈絡
 - [CCLSTM 論文規格](cclstm-paper-spec.md) — 2D BEV 輸入輸出、尺寸/時間/loss、flow GT 需物件軌跡的陷阱
