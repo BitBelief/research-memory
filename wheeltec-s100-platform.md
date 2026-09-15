@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 505a0658-2b00-4093-b0cd-bbfa5bbab5cd
-  modified: 2026-09-15T06:35:16.634Z
+  modified: 2026-09-15T06:50:42.546Z
 ---
 
 2026-09-09 使用者確認：[[lidar-ogm-forecast-spec-v2]] 裡那台「差速自走車」＝ **WHEELTEC S100**（轮趣科技／東莞，差速服務機器人，支援自動回充）。
@@ -77,6 +77,12 @@ metadata:
 2. **`dt ≥ 0.5s` 不再靜默跳過**：會 warn 並累計 `_gap_drops`。里程少掉一段位移必須看得見。
 3. **check-then-use 競態**：`rx_loop` / `tx_tick` / **`shutdown`** 三處改成先取本地 `ser = self._ser` 再用，並把 `AttributeError` 加進 except。`shutdown` 那處最關鍵——**停車路徑拋例外的話零速度送不出去**。
 **⬜ 仍未處理（已知，不急）**：① **從非 ROS 執行緒 publish**（`rx_loop`→`on_state`→`publish`/TF）——rclpy publisher 非 thread-safe，**若日後關閉時隨機當掉第一個查這裡**，正解是丟 queue 由 timer 發布 ② 次幀未驗 XOR ③ `angular_velocity_covariance`/`linear_acceleration_covariance` 全 0（餵 `robot_localization` 前要填）④ `max_linear` 的 clamp 在除以 `lin_scale` 之前。
+**⚠⚠ 2026-09-15：同樣症狀再現，但「重新送電」這次無效 → 不是 latched stop。**
+`Flag_Stop=0`、25.10 V、20 Hz 全過、編碼器恆 `+0.000`、手轉輪子自由無阻力；斷電重開後仍然 `+0.000`。
+→ **2026-09-14 那條「解法＝底盤重新送電」不是萬用解**，只對 latched stop 有效。症狀相同不代表病因相同。
+→ 當時研判已進入硬體層（動力匯流排沒電）：待量測驅動板電源輸入端子電壓以定位斷點。**結果待補。**
+⚠ **手轉輪子自由 ≠ 一定沒通電**：latched stop 時驅動器同樣解除、輪子同樣自由，**這個測試分不出兩者**（當天曾據此誤判並繞去查保險絲）。要分辨只能量電壓。
+
 **★★ 2026-09-15 診斷鏈：「通訊正常但輪子不轉」怎麼查（實戰走完一次）**
 ⚠⚠ **最會騙人的前提：底盤會回話 ≠ 動力電源有電。** 控制板可由 **USB 5V** 單獨供電，所以 20 Hz 回傳、XOR 全過、IMU 重力正確，這些全都可以在馬達完全沒電的情況下成立。**不要把「通訊健康」當成「電源健康」。**
 ⚠ **電壓讀數在動力開關之前**：`/battery_state` 報 25.04 V 只證明電池接著，不證明馬達匯流排有電。（對照：動力關掉時曾讀到 **4.309 V**，那是只剩 USB 5V 的樣子 —— 看到個位數電壓就是動力沒開。）
