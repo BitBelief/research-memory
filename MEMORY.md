@@ -1,0 +1,11 @@
+- [CCLSTM 動靜態判斷專案](cclstm-dynamic-static-project.md) — 專案緣起；⚠ 感測器已改 2D 光達，現行規格見 v2
+- [Stereo 動靜態 pipeline](stereo-dynamic-static-pipeline.md) — ⚠ 已被 bev-system-spec-v1 取代，僅存歷史脈絡
+- [CCLSTM 論文規格](cclstm-paper-spec.md) — 2D BEV 輸入輸出、尺寸/時間/loss、flow GT 需物件軌跡的陷阱
+- [雙目相機硬體](user-stereo-camera-hardware.md) — ⚠ 已擱置，改用 2D 光達
+- [BEV 系統規格 v1](bev-system-spec-v1.md) — ⚠ 已被 v2 取代；保留 BEV 分箱／可見性等幾何教訓
+- [預測 baseline 對照](forecast-baseline-comparison.md) — 訓練前先比 persistence／等速外插，決定 T_f 與網路值不值得
+- [WHEELTEC S100 車體平台](wheeltec-s100-platform.md) — 車＝S100 差速底盤；協定已自行解碼可直控；⚠ 2026-09-14 分工線解消，運算全上車
+- [光達 OGM 預測規格 v2](lidar-ogm-forecast-spec-v2.md) — 現行方向與全部實驗結果；主軸＝三層融合；⚠ 2026-09-14 改用 Orin Nano 全上車，電源是唯一新風險
+- [新穎性 vs 執行力](feedback-novelty-vs-execution.md) — 使用者表態：約束是範圍與誠實，不是新穎性；別再用「被佔住了」否決方向
+- [台灣碩論前案](taiwan-thesis-prior-art.md) — 台大 2022 佔住純 OGM 預測、交大 2024 佔住社交導航決策層；空隙在哪
+- [佔據預測前案查證](occupancy-forecast-prior-art-2026-08.md) — SCOPE 程式碼實測、Occ3D 三態是標配、唯一缺口=校準涵蓋率
