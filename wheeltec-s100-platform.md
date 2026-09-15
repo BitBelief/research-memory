@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 505a0658-2b00-4093-b0cd-bbfa5bbab5cd
-  modified: 2026-09-14T13:58:12.586Z
+  modified: 2026-09-15T04:20:24.797Z
 ---
 
 2026-09-09 使用者確認：[[lidar-ogm-forecast-spec-v2]] 裡那台「差速自走車」＝ **WHEELTEC S100**（轮趣科技／東莞，差速服務機器人，支援自動回充）。
@@ -77,6 +77,8 @@ metadata:
 2. **`dt ≥ 0.5s` 不再靜默跳過**：會 warn 並累計 `_gap_drops`。里程少掉一段位移必須看得見。
 3. **check-then-use 競態**：`rx_loop` / `tx_tick` / **`shutdown`** 三處改成先取本地 `ser = self._ser` 再用，並把 `AttributeError` 加進 except。`shutdown` 那處最關鍵——**停車路徑拋例外的話零速度送不出去**。
 **⬜ 仍未處理（已知，不急）**：① **從非 ROS 執行緒 publish**（`rx_loop`→`on_state`→`publish`/TF）——rclpy publisher 非 thread-safe，**若日後關閉時隨機當掉第一個查這裡**，正解是丟 queue 由 timer 發布 ② 次幀未驗 XOR ③ `angular_velocity_covariance`/`linear_acceleration_covariance` 全 0（餵 `robot_localization` 前要填）④ `max_linear` 的 clamp 在除以 `lin_scale` 之前。
+**★ 版控（2026-09-15）**：`~/s100_ws` 已是 git repo，remote `https://github.com/BitBelief/s100_ws`（**private**，帳號 `BitBelief`）。只收 `src/`＋README＋.gitignore 共 13 檔；`build/ install/ log/ __pycache__/ .pytest_cache/` 全部忽略（colcon 可重生）。Orin Nano 上直接 `git clone` 即可，不用手動搬檔。記憶庫版控見 [[memory-repo-sync]]。
+
 **⚠⚠ 錄任何 bag 之前必做**：`config/s100.yaml` 的 `linear_scale` / `angular_scale` 仍是 1.0 —— **輪徑/輪距校正（直線 2m ＋ 原地轉 10 圈，需落地）還沒做**。不做的話里程有系統性比例誤差，ego-motion 扣不乾淨。
 
 **⚠ 桌上那張 Jetson 載板是 Waveshare JETSON-IO-BASE-A**（Nano/Xavier NX 世代）：**只吃 5V**（官方配 5V/4A，桶狀 5.5mm OD × 2.1mm ID 中心正極），**且無 J48 電源選擇跳線**，DC 座直通電路。曾誤插 19V/3.42A（Orin Nano 官方變壓器）→ 當下無反應，改用 USB 供電才開機；模組存活。5V/4A 對 Xavier NX 15W 模式是**剛好卡上限**，建議 5A。
