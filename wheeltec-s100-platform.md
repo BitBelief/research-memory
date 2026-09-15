@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 505a0658-2b00-4093-b0cd-bbfa5bbab5cd
-  modified: 2026-09-15T04:20:24.797Z
+  modified: 2026-09-15T06:35:16.634Z
 ---
 
 2026-09-09 使用者確認：[[lidar-ogm-forecast-spec-v2]] 裡那台「差速自走車」＝ **WHEELTEC S100**（轮趣科技／東莞，差速服務機器人，支援自動回充）。
@@ -77,6 +77,23 @@ metadata:
 2. **`dt ≥ 0.5s` 不再靜默跳過**：會 warn 並累計 `_gap_drops`。里程少掉一段位移必須看得見。
 3. **check-then-use 競態**：`rx_loop` / `tx_tick` / **`shutdown`** 三處改成先取本地 `ser = self._ser` 再用，並把 `AttributeError` 加進 except。`shutdown` 那處最關鍵——**停車路徑拋例外的話零速度送不出去**。
 **⬜ 仍未處理（已知，不急）**：① **從非 ROS 執行緒 publish**（`rx_loop`→`on_state`→`publish`/TF）——rclpy publisher 非 thread-safe，**若日後關閉時隨機當掉第一個查這裡**，正解是丟 queue 由 timer 發布 ② 次幀未驗 XOR ③ `angular_velocity_covariance`/`linear_acceleration_covariance` 全 0（餵 `robot_localization` 前要填）④ `max_linear` 的 clamp 在除以 `lin_scale` 之前。
+**★★ 2026-09-15 診斷鏈：「通訊正常但輪子不轉」怎麼查（實戰走完一次）**
+⚠⚠ **最會騙人的前提：底盤會回話 ≠ 動力電源有電。** 控制板可由 **USB 5V** 單獨供電，所以 20 Hz 回傳、XOR 全過、IMU 重力正確，這些全都可以在馬達完全沒電的情況下成立。**不要把「通訊健康」當成「電源健康」。**
+⚠ **電壓讀數在動力開關之前**：`/battery_state` 報 25.04 V 只證明電池接著，不證明馬達匯流排有電。（對照：動力關掉時曾讀到 **4.309 V**，那是只剩 USB 5V 的樣子 —— 看到個位數電壓就是動力沒開。）
+**判定順序（由便宜到貴，不要跳）**
+1. `Flag_Stop`（回傳幀 byte[1]）：`0`＝底盤沒被急停。⚠ **本驅動解析了卻沒用**（`protocol.py` 有 `stop_flag`，`s100_node.py` 沒 log 也沒發 topic）→ **值得補成 log 或 diagnostics topic**，否則每次都要寫臨時腳本。
+2. **單一行程、不經 ROS 跑 `run_wheels.py`**：看編碼器 `實測 vx`。恆 `+0.000` ＝ 底盤不理任何來源的指令 → 軟體清白，往硬體查。
+3. **用手轉輪子**（資訊量最大）：**轉得動、沒阻力 ＝ 馬達驅動器沒通電**（查動力開關／保險絲／電池接頭／BMS 鎖定／驅動板）；**有阻力或段落感 ＝ 驅動器通電並主動維持零速** → 回頭查韌體模式與指令內容。
+**已排除、不必重查**：幀格式與 `motion_test.py`（9/9 實測能驅動）逐位元組一致，含 `enable=0`、`model=0`；串口參數等價（`dtr/rts=False`、`timeout=0.05`）；`on_cmd` 確有被呼叫（「沒收到 /cmd_vel → 送零」那句就是證據）；TX 無寫入錯誤；次要幀 `0x7C` 仍全零（`7c 00 00 00 00 00 7c 7f`），**沒有故障碼可用**。
+**唯讀診斷腳本**（只讀不寫，不會讓車動，可隨時重寫）：dump `Flag_Stop`＋電壓＋速度原始值、dump 次要幀。內容見本條，20 行內可重建。
+
+**⚠⚠ 串口獨佔，今天一天踩三次**：① 昨天被 **Ctrl+Z 暫停**的 launch 掛 16 小時仍握著埠（`ps` 的 `STAT` 是 `T`／`Tl` 就是它） ② 同時跑兩個 ROS driver ③ 同時跑兩份 `run_wheels.py`。三次症狀不同（讀不到資料／`multiple access` 錯誤／指令全被丟棄）但**根因相同**。
+→ **啟動任何會碰 `/dev/ttyACM0` 的東西，一律用這個 guard，別靠記性**：
+```bash
+fuser -s /dev/ttyACM0 || python3 ~/wheeltec_test/run_wheels.py
+```
+→ 收掉殘留用 `kill -INT`（腳本 `finally` 會送零速度），不要直接 `kill -9`。**結束一律 Ctrl+C，絕不 Ctrl+Z。**
+
 **★ 版控（2026-09-15）**：`~/s100_ws` 已是 git repo，remote `https://github.com/BitBelief/s100_ws`（**private**，帳號 `BitBelief`）。只收 `src/`＋README＋.gitignore 共 13 檔；`build/ install/ log/ __pycache__/ .pytest_cache/` 全部忽略（colcon 可重生）。Orin Nano 上直接 `git clone` 即可，不用手動搬檔。記憶庫版控見 [[memory-repo-sync]]。
 
 **⚠⚠ 錄任何 bag 之前必做**：`config/s100.yaml` 的 `linear_scale` / `angular_scale` 仍是 1.0 —— **輪徑/輪距校正（直線 2m ＋ 原地轉 10 圈，需落地）還沒做**。不做的話里程有系統性比例誤差，ego-motion 扣不乾淨。
