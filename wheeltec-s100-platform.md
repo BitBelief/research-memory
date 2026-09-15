@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 505a0658-2b00-4093-b0cd-bbfa5bbab5cd
-  modified: 2026-09-15T07:26:51.152Z
+  modified: 2026-09-15T08:34:08.424Z
 ---
 
 2026-09-09 使用者確認：[[lidar-ogm-forecast-spec-v2]] 裡那台「差速自走車」＝ **WHEELTEC S100**（轮趣科技／東莞，差速服務機器人，支援自動回充）。
@@ -109,6 +109,15 @@ metadata:
 fuser -s /dev/ttyACM0 || python3 ~/wheeltec_test/run_wheels.py
 ```
 → 收掉殘留用 `kill -INT`（腳本 `finally` 會送零速度），不要直接 `kill -9`。**結束一律 Ctrl+C，絕不 Ctrl+Z。**
+
+**★★ Orin Nano 已到手並確認型號（2026-09-15）**
+`TNSPEC 3767-300-0005-R.1-1-1-jetson-orin-nano-devkit-super-` → **P3767-0005（Orin Nano 8GB）＋ devkit-super 載板**。出廠狀態 **L4T 36.4.7（JetPack 6.2.x / Ubuntu 22.04）**，2025-09 建置。
+→ **這組正是 JetPack 7.2（L4T 39.2 / Ubuntu 24.04 / CUDA 13.2）實測過的配置**，相容性已確認。
+**⚠ JetPack 6.2 → 7.2 沒有 apt 升級路徑**，kernel 5.15→6.8、CUDA 12.6→13.2、Ubuntu 22.04→24.04 全換，**只能整顆重刷**。
+**⚠ JetPack 7.2 起不再提供 Orin Nano 的 SD 卡映像**（舊筆記「microSD 先開機驗硬體再刷 NVMe」的做法已失效）。改用 **Jetson ISO**（USB 安裝媒體，可裝到 microSD 或 NVMe）或 **SDK Manager 直刷**。
+刷機主機：本機筆電 Ubuntu 24.04.3 x86_64 即可（JL 39.2 已驗證 22.04／24.04 當 host），需約 31 GB。
+Recovery mode：J14 的 pin 9-10 短接（或按住 Force Recovery）後再上電，USB-C 接 host。**電源仍是 19V，勿拿 Waveshare 那條 5V。**
+⚠ **保守替代方案仍然成立**：留在 JetPack 6.2.x + ROS 2 Humble，CUDA 12.6 生態成熟（PyTorch wheel、jetson-containers 都現成），可迴避 CUDA 13.2 的 sm_87 疑慮。架構上兩者皆可，因為 9/14 已決定全部運算上車、與筆電只用 bag 檔介接。
 
 **★ 版控（2026-09-15）**：`~/s100_ws` 已是 git repo，remote `https://github.com/BitBelief/s100_ws`（**private**，帳號 `BitBelief`）。只收 `src/`＋README＋.gitignore 共 13 檔；`build/ install/ log/ __pycache__/ .pytest_cache/` 全部忽略（colcon 可重生）。Orin Nano 上直接 `git clone` 即可，不用手動搬檔。記憶庫版控見 [[memory-repo-sync]]。
 
