@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 505a0658-2b00-4093-b0cd-bbfa5bbab5cd
-  modified: 2026-09-15T12:35:03.702Z
+  modified: 2026-09-15T13:25:07.750Z
 ---
 
 2026-09-09 使用者確認：[[lidar-ogm-forecast-spec-v2]] 裡那台「差速自走車」＝ **WHEELTEC S100**（轮趣科技／東莞，差速服務機器人，支援自動回充）。
@@ -109,6 +109,13 @@ metadata:
 fuser -s /dev/ttyACM0 || python3 ~/wheeltec_test/run_wheels.py
 ```
 → 收掉殘留用 `kill -INT`（腳本 `finally` 會送零速度），不要直接 `kill -9`。**結束一律 Ctrl+C，絕不 Ctrl+Z。**
+
+**★★★ 刷機完成並已驗證（2026-09-15）：JetPack 7.2 實裝成功**
+`R39 REVISION 2.0`（L4T 39.2，2026-06-01 建置）／Ubuntu 24.04.4／kernel `6.8.12-1021-tegra` aarch64／67 個 `nvidia-l4t-*` 套件／`/usr/local/cuda-13.2` 齊備。刷在**新的 NVMe**，舊碟（JP6.2.x）原封保留＝隨時可換回的 rollback。
+主機名 `airs-nano2`，帳號 **`airs`**。兩條連線都通：**USB-C `192.168.55.1`（位址固定，WiFi 不穩時的救命通道）**、WiFi `192.168.50.224`（快，搬檔用）。xrdp 已裝、3389 兩邊都開。
+⚠ **JP7.2 base 映像是 minimized，不含桌面環境** —— 登入時會顯示「This system has been minimized」。所以 RDP 要自己裝 XFCE；**GNOME 46 在 RDP 虛擬顯示器下會黑畫面**（Mutter 需要 DRI3，虛擬顯示器不提供），這不是 xrdp 壞掉。
+⚠ **kernel 名稱 `6.8.12-1021-tegra` 看起來像 Canonical 的 Ubuntu Tegra kernel，但其實是 JetPack 7.2 的**。當天曾據此誤判成「裝到純 Ubuntu 映像」。**要確認是不是 JetPack，看 `/etc/nv_tegra_release` 和 `/usr/local/cuda*`，不要看 kernel 命名。**
+⚠ **不要直接 `sudo apt upgrade`**（出廠就有 482 個待更新）：可能動到 `nvidia-l4t-*` 把 BSP 升成不相容版本，是 Jetson 變磚的常見原因。
 
 **⚠⚠ Orin Nano 沒有 RTC 備用電池 → 冷開機後時鐘歸零到 1970，所有 HTTPS 全掛（2026-09-15 實際踩到）**
 症狀：`ERROR: cannot verify www.nvidia.com's certificate ... Issued certificate not yet valid`、SDK Manager 報「No internet connection」、apt 檢查失敗。**網路其實是通的**（DNS 解析成功、TCP 連得上），是憑證有效期從 2020 起算，而系統以為現在是 1970，所以每張合法憑證都「還沒生效」。
