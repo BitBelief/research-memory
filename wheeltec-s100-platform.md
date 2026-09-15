@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 505a0658-2b00-4093-b0cd-bbfa5bbab5cd
-  modified: 2026-09-15T08:34:08.424Z
+  modified: 2026-09-15T12:35:03.702Z
 ---
 
 2026-09-09 使用者確認：[[lidar-ogm-forecast-spec-v2]] 裡那台「差速自走車」＝ **WHEELTEC S100**（轮趣科技／東莞，差速服務機器人，支援自動回充）。
@@ -109,6 +109,11 @@ metadata:
 fuser -s /dev/ttyACM0 || python3 ~/wheeltec_test/run_wheels.py
 ```
 → 收掉殘留用 `kill -INT`（腳本 `finally` 會送零速度），不要直接 `kill -9`。**結束一律 Ctrl+C，絕不 Ctrl+Z。**
+
+**⚠⚠ Orin Nano 沒有 RTC 備用電池 → 冷開機後時鐘歸零到 1970，所有 HTTPS 全掛（2026-09-15 實際踩到）**
+症狀：`ERROR: cannot verify www.nvidia.com's certificate ... Issued certificate not yet valid`、SDK Manager 報「No internet connection」、apt 檢查失敗。**網路其實是通的**（DNS 解析成功、TCP 連得上），是憑證有效期從 2020 起算，而系統以為現在是 1970，所以每張合法憑證都「還沒生效」。
+→ **看到任何憑證／apt／pip／git 的 HTTPS 怪錯誤，第一個動作是 `date`，不要去查網路。** 錯誤訊息完全不會提到時間。
+→ 修法：`sudo timedatectl set-ntp true`，確認 `System clock synchronized: yes`。永久解法是在 J3 裝 RTC 備用電池。
 
 **★★ Orin Nano 已到手並確認型號（2026-09-15）**
 `TNSPEC 3767-300-0005-R.1-1-1-jetson-orin-nano-devkit-super-` → **P3767-0005（Orin Nano 8GB）＋ devkit-super 載板**。出廠狀態 **L4T 36.4.7（JetPack 6.2.x / Ubuntu 22.04）**，2025-09 建置。
