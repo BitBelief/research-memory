@@ -6,7 +6,8 @@
 - [BEV 系統規格 v1](bev-system-spec-v1.md) — ⚠ 已被 v2 取代；保留 BEV 分箱／可見性等幾何教訓
 - [預測 baseline 對照](forecast-baseline-comparison.md) — 訓練前先比 persistence／等速外插，決定 T_f 與網路值不值得
 - [WHEELTEC S100 車體平台](wheeltec-s100-platform.md) — 車＝S100 差速底盤；協定已自行解碼可直控；⚠ 2026-09-14 分工線解消，運算全上車
-- [L2 3D 動靜態分離轉向](l2-3d-dynamic-static-pivot.md) — ⚠ 現行方向（2026-10-19）；規格看 ~/l2_ws/CLAUDE.md
+- [移動機械手臂分工轉向](mobile-manipulator-pivot-2026-10-20.md) — ⚠ **現行方向（2026-10-20）**；底盤5.2s vs 手臂0.7s、統一佔據；規格看 ~/l2_ws/CLAUDE.md
+- [L2 3D 動靜態分離轉向](l2-3d-dynamic-static-pivot.md) — ⚠ 已被 2026-10-20 轉向取代，保留感測器分析
 - [光達 OGM 預測規格 v2](lidar-ogm-forecast-spec-v2.md) — ⚠ 2D／OGM 時期；已被 L2 3D 轉向取代，保留實驗結果與方法論教訓
 - [別替他開模擬器](feedback-dont-launch-gui-sims.md) — 使用者自己啟動 GUI／模擬器；我只給指令，驗證改用不開視窗的手段
 - [新穎性 vs 執行力](feedback-novelty-vs-execution.md) — 使用者表態：約束是範圍與誠實，不是新穎性；別再用「被佔住了」否決方向
